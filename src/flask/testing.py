@@ -240,8 +240,10 @@ class FlaskClient(Client):
         response.json_module = self.application.json  # type: ignore[assignment]
 
         # Re-push contexts that were preserved during the request.
+        # Pop from the front of the list to push in the original order,
+        # ensuring the last context pushed is the current one.
         while self._new_contexts:
-            cm = self._new_contexts.pop()
+            cm = self._new_contexts.pop(0)
             self._context_stack.enter_context(cm)
 
         return response

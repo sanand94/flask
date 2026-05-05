@@ -394,3 +394,86 @@ def test_client_pop_all_preserved(app, req_ctx, client):
     rv.close()
     # only req_ctx fixture should still be pushed
     assert _cv_request.get(None) is req_ctx
+
+
+def test_preserved_context_is_most_recent(app):
+    """Test that after a request with client context manager, the preserved
+    context reflects the most recent request's state (session, request, etc.),
+    not an older context. This tests the fix for the reversed context order bug.
+    """
+    app.secret_key = "test-secret"
+
+    @app.route("/set-session")
+    def set_session():
+        flask.session["value"] = "from_request"
+        return "ok"
+
+    @app.route("/read-session")
+    def read_session():
+        return flask.session.get("value", "missing")
+
+    client = app.test_client()
+
+    with client:
+        # Make a request that sets session data
+        rv = client.get("/set-session")
+        assert rv.status_code == 200
+
+        # The preserved context should reflect the most recent request
+        # so session should have the value set during the request
+        assert flask.session.get("value") == "from_request"
+
+
+def test_preserved_context_request_object_is_correct(app):
+    """Test that after a request, the preserved request context corresponds
+    to the most recently made request, not an older one.
+    """
+
+    @app.route("/first")
+    def first():
+        return "first"
+
+    @app.route("/second")
+    def second():
+        return "second"
+
+    client = app.test_client()
+
+    with client:
+        client.get("/first")
+        # After first request, the preserved context should be for /first
+        assert flask.request.path == "/first"
+
+        client.get("/second")
+        # After second request, the preserved context should be for /second
+        assert flask.request.path == "/second"
+
+
+def test_context_order_with_multiple_requests(app):
+    """Test that contexts are pushed in correct order so the most recent
+    request context is the current one after each request in a with block.
+    """
+    app.secret_key = "test-secret"
+    results = []
+
+    @app.route("/store/<value>")
+    def store(value):
+        flask.session["last"] = value
+        return value
+
+    client = app.test_client()
+
+    with client:
+        client.get("/store/first")
+        # session should reflect the last request
+        results.append(flask.session.get("last"))
+
+        client.get("/store/second")
+        # session should reflect the last request
+        results.append(flask.session.get("last"))
+
+        client.get("/store/third")
+        # session should reflect the last request
+        results.append(flask.session.get("last"))
+
+    assert results == ["first", "second", "third"]
