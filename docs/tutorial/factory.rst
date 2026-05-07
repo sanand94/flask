@@ -56,10 +56,7 @@ directory should be treated as a package.
             app.config.from_mapping(test_config)
 
         # ensure the instance folder exists
-        try:
-            os.makedirs(app.instance_path)
-        except OSError:
-            pass
+        os.makedirs(app.instance_path, exist_ok=True)
 
         # a simple page that says hello
         @app.route('/hello')
@@ -113,7 +110,9 @@ later in the tutorial, but it already does a lot.
     :attr:`app.instance_path <Flask.instance_path>` exists. Flask
     doesn't create the instance folder automatically, but it needs to be
     created because your project will create the SQLite database file
-    there.
+    there. The ``exist_ok=True`` argument avoids an error if the folder
+    already exists, while still propagating errors such as permission
+    errors.
 
 #.  :meth:`@app.route() <Flask.route>` creates a simple route so you can
     see the application working before getting into the rest of the
