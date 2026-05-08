@@ -130,7 +130,13 @@ def after_this_request(f: AfterRequestCallable) -> AfterRequestCallable:
 
     .. versionadded:: 0.9
     """
-    _request_ctx_stack.top._after_request_functions.append(f)
+    top = _request_ctx_stack.top
+    if top is None:
+        raise RuntimeError(
+            "This decorator can only be used when a request context is"
+            " active.  For instance within view functions."
+        )
+    top._after_request_functions.append(f)
     return f
 
 
