@@ -344,12 +344,18 @@ class Blueprint(Scaffold):
                 app.cli.add_command(self.cli)
 
         for blueprint, bp_options in self._blueprints:
-            url_prefix = options.get("url_prefix", "")
+            # Determine the effective URL prefix for this (parent) blueprint,
+            # mirroring BlueprintSetupState logic: options override, else blueprint attr.
+            url_prefix = options.get("url_prefix")
+            if url_prefix is None:
+                url_prefix = self.url_prefix or ""
+
             if "url_prefix" in bp_options:
                 url_prefix = (
                     url_prefix.rstrip("/") + "/" + bp_options["url_prefix"].lstrip("/")
                 )
 
+            bp_options = bp_options.copy()
             bp_options["url_prefix"] = url_prefix
             bp_options["name_prefix"] = options.get("name_prefix", "") + self.name + "."
             blueprint.register(app, bp_options)
