@@ -2,6 +2,7 @@ import importlib.metadata
 
 import click
 import pytest
+from click.testing import Result
 
 import flask
 from flask import appcontext_popped
@@ -394,3 +395,103 @@ def test_client_pop_all_preserved(app, req_ctx, client):
     rv.close()
     # only req_ctx fixture should still be pushed
     assert _cv_request.get(None) is req_ctx
+
+
+def test_cli_invoke_returns_result_instance(app):
+    """Test that FlaskCliRunner.invoke() returns a click.testing.Result instance.
+
+    This test verifies the fix for the type annotation bug where invoke()
+    was annotated as returning t.Any instead of Result.
+    """
+
+    @app.cli.command("hello")
+    def hello_command():
+        click.echo("Hello, World!")
+
+    runner = app.test_cli_runner()
+    result = runner.invoke(args=["hello"])
+
+    # Verify the return value is a proper Result instance
+    assert isinstance(result, Result)
+
+    # Verify that Result attributes are accessible (these would be t.Any
+    # and not type-checked without the fix)
+    assert isinstance(result.output, str)
+    assert isinstance(result.exit_code, int)
+    assert result.exit_code == 0
+    assert "Hello" in result.output
+
+
+def test_cli_invoke_result_attributes_accessible(app):
+    """Test that the Result object returned by invoke() has all expected attributes.
+
+    This verifies that the return type is genuinely a Result object with
+    proper attributes, not just t.Any.
+    """
+
+    @app.cli.command("fail")
+    def fail_command():
+        raise RuntimeError("Something went wrong")
+
+    runner = app.test_cli_runner()
+    result = runner.invoke(args=["fail"])
+
+    # Result should be a proper click Result instance
+    assert isinstance(result, Result)
+
+    # Check various Result attributes are accessible
+    assert result.exit_code != 0
+    assert result.exception is not None
+    assert isinstance(result.exception, RuntimeError)
+
+
+def test_cli_invoke_with_command_object_returns_result(app):
+    """Test that invoking with a command object also returns a Result instance."""
+
+    @app.cli.command("greet")
+    @click.argument("name")
+    def greet_command(name):
+        click.echo(f"Hello, {name}!")
+
+    runner = app.test_cli_runner()
+    result = runner.invoke(greet_command, args=["Flask"])
+
+    assert isinstance(result, Result)
+    assert result.exit_code == 0
+    assert "Hello, Flask!" in result.output
+
+
+def test_cli_invoke_default_cli_is_app_cli(app):
+    """Test that when cli=None, the app's CLI group is used, and Result is returned."""
+
+    @app.cli.command("version")
+    def version_command():
+        click.echo("1.0.0")
+
+    runner = app.test_cli_runner()
+    # Invoke without specifying cli (should default to app.cli)
+    result = runner.invoke(args=["version"])
+
+    assert isinstance(result, Result)
+    assert result.exit_code == 0
+    assert "1.0.0" in result.output
+
+
+def test_cli_runner_invoke_return_type_is_result(app):
+    """Regression test: FlaskCliRunner.invoke() must return Result, not t.Any.
+
+    Before the fix, the return type was annotated as t.Any. This test
+    documents and verifies the correct behavior at runtime.
+    """
+    import inspect
+    import typing
+
+    # Check the actual annotation on the method
+    hints = typing.get_type_hints(FlaskCliRunner.invoke)
+    return_annotation = hints.get("return")
+
+    # The return annotation should be Result, not Any
+    assert return_annotation is Result, (
+        f"Expected return type to be Result, got {return_annotation}. "
+        "The type hint for FlaskCliRunner.invoke() should be Result, not t.Any."
+    )

@@ -10,6 +10,7 @@ from urllib.parse import urlsplit
 
 import werkzeug.test
 from click.testing import CliRunner
+from click.testing import Result
 from werkzeug.test import Client
 from werkzeug.wrappers import Request as BaseRequest
 
@@ -271,9 +272,9 @@ class FlaskCliRunner(CliRunner):
         self.app = app
         super().__init__(**kwargs)
 
-    def invoke(  # type: ignore
+    def invoke(  # type: ignore[override]
         self, cli: t.Any = None, args: t.Any = None, **kwargs: t.Any
-    ) -> t.Any:
+    ) -> Result:
         """Invokes a CLI command in an isolated environment. See
         :meth:`CliRunner.invoke <click.testing.CliRunner.invoke>` for
         full method documentation. See :ref:`testing-cli` for examples.
