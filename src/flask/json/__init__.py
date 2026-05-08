@@ -153,16 +153,26 @@ def dump(
     _json.dump(obj, fp, **kwargs)
 
 
-def loads(s: str, app: t.Optional["Flask"] = None, **kwargs: t.Any) -> t.Any:
+def loads(
+    s: t.Union[str, bytes, bytearray],
+    app: t.Optional["Flask"] = None,
+    **kwargs: t.Any,
+) -> t.Any:
     """Deserialize an object from a string of JSON.
 
     Takes the same arguments as the built-in :func:`json.loads`, with
     some defaults from application configuration.
 
-    :param s: JSON string to deserialize.
+    :param s: JSON string to deserialize. Accepts a :class:`str`,
+        :class:`bytes`, or :class:`bytearray` containing a UTF-8
+        encoded JSON document.
     :param app: Use this app's config instead of the active app context
         or defaults.
     :param kwargs: Extra arguments passed to :func:`json.loads`.
+
+    .. versionchanged:: 2.1.2
+        The ``s`` parameter now accepts :class:`bytes` and
+        :class:`bytearray` to match the standard library.
 
     .. versionchanged:: 2.0
         ``encoding`` is deprecated and will be removed in Flask 2.1. The
