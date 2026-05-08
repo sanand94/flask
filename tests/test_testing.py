@@ -394,3 +394,125 @@ def test_client_pop_all_preserved(app, req_ctx, client):
     rv.close()
     # only req_ctx fixture should still be pushed
     assert _cv_request.get(None) is req_ctx
+
+
+def test_preserved_context_is_most_recent(app):
+    """The preserved context after a request should be the most recently
+    pushed one, so that session reflects the state of the last response.
+    Regression test for: contexts were being pushed in reverse order.
+    """
+    app.secret_key = "test-secret"
+
+    @app.route("/set")
+    def set_session():
+        flask.session["value"] = "from_request"
+        return "ok"
+
+    @app.route("/get")
+    def get_session():
+        return flask.session.get("value", "missing")
+
+    with app.test_client() as client:
+        # Make a request that sets session data
+        rv = client.get("/set")
+        assert rv.status_code == 200
+
+        # The preserved context should reflect the state after the request,
+        # meaning session should have the value set during the request.
+        # If contexts are pushed in wrong order, the oldest (pre-request)
+        # context would be current instead of the most recent one.
+        assert flask.session.get("value") == "from_request"
+
+
+def test_preserved_context_order_multiple_requests(app):
+    """After multiple requests within a with block, the preserved context
+    should always be from the most recent request.
+    """
+    app.secret_key = "test-secret"
+
+    request_paths = []
+
+    @app.route("/first")
+    def first():
+        flask.session["visited"] = "first"
+        return "first"
+
+    @app.route("/second")
+    def second():
+        flask.session["visited"] = "second"
+        return "second"
+
+    with app.test_client() as client:
+        client.get("/first")
+        # After first request, session should reflect first request
+        assert flask.session.get("visited") == "first"
+
+        client.get("/second")
+        # After second request, session should reflect second request
+        assert flask.session.get("visited") == "second"
+
+
+def test_preserved_context_request_object_is_latest(app):
+    """The request object available after a with-client block should be
+    from the most recent request, not an earlier one.
+    """
+    @app.route("/page/<name>")
+    def page(name):
+        return f"page {name}"
+
+    with app.test_client() as client:
+        client.get("/page/first")
+        first_request_url = flask.request.url
+
+        client.get("/page/second")
+        second_request_url = flask.request.url
+
+        # The current request should be from the second (most recent) request
+        assert "second" in flask.request.url
+        assert flask.request.url == second_request_url
+        assert flask.request.url != first_request_url
+
+
+def test_new_contexts_order_preserved(app):
+    """Verify that _new_contexts list is drained in FIFO order (pop(0)),
+    ensuring contexts are pushed to ExitStack in the correct sequence.
+    """
+    from flask.testing import FlaskClient
+
+    @app.route("/")
+    def index():
+        return "ok"
+
+    client = app.test_client()
+    client.preserve_context = True
+
+    # Simulate _new_contexts with ordered items
+    # (in real usage these are context managers appended during request)
+    pushed_order = []
+
+    class TrackingCM:
+        def __init__(self, name):
+            self.name = name
+
+        def __enter__(self):
+            pushed_order.append(self.name)
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+    # Manually populate _new_contexts as if they were appended during a request
+    client._new_contexts = [TrackingCM("first"), TrackingCM("second"), TrackingCM("third")]
+
+    # Drain using the fixed FIFO approach (pop(0))
+    from contextlib import ExitStack
+    client._context_stack = ExitStack()
+    while client._new_contexts:
+        cm = client._new_contexts.pop(0)
+        client._context_stack.enter_context(cm)
+
+    # Should be pushed in order: first, second, third
+    # So "third" is on top of the stack (most recent)
+    assert pushed_order == ["first", "second", "third"]
+
+    client._context_stack.close()

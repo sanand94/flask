@@ -240,8 +240,10 @@ class FlaskClient(Client):
         response.json_module = self.application.json  # type: ignore[assignment]
 
         # Re-push contexts that were preserved during the request.
+        # Push in the original order (FIFO) so that the last context
+        # pushed is the most recent (current) one.
         while self._new_contexts:
-            cm = self._new_contexts.pop()
+            cm = self._new_contexts.pop(0)
             self._context_stack.enter_context(cm)
 
         return response
