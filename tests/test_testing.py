@@ -394,3 +394,89 @@ def test_client_pop_all_preserved(app, req_ctx, client):
     rv.close()
     # only req_ctx fixture should still be pushed
     assert _cv_request.get(None) is req_ctx
+
+
+def test_preserved_context_is_most_recent(app):
+    """Test that the preserved context after a request is the most recently
+    pushed context (i.e. the one from the last response), not an older one.
+    Regression test for issue #5786.
+    """
+    app.secret_key = "test-secret"
+
+    @app.route("/set-session")
+    def set_session():
+        flask.session["key"] = "value_from_request"
+        return "ok"
+
+    @app.route("/check-session")
+    def check_session():
+        return flask.session.get("key", "not_set")
+
+    with app.test_client() as client:
+        # Make first request that sets session data
+        rv = client.get("/set-session")
+        assert rv.status_code == 200
+
+        # After the request, the preserved context should reflect the most
+        # recent request's state (session should have the value set above)
+        assert flask.session.get("key") == "value_from_request"
+
+        # Make another request and verify session is accessible
+        rv = client.get("/check-session")
+        assert rv.data == b"value_from_request"
+
+
+def test_preserved_context_order_with_stream(app, req_ctx, client):
+    """Test that when stream_with_context is used, the preserved contexts
+    are pushed in the correct order so the request context from the response
+    is active (not an older one).
+    Regression test for issue #5786.
+    """
+    request_paths = []
+
+    @app.route("/stream")
+    def stream():
+        return flask.stream_with_context("streamed")
+
+    @app.route("/normal")
+    def normal():
+        return "normal"
+
+    with client:
+        # Make a request to the streaming endpoint
+        rv = client.get("/stream")
+        # The current request context should be the one from /stream
+        assert flask.request.path == "/stream"
+
+    rv.close()
+    # After closing, only the req_ctx fixture context should remain
+    assert _cv_request.get(None) is req_ctx
+
+
+def test_context_preserved_across_multiple_requests(app):
+    """Test that making multiple requests within a with client block
+    correctly updates the preserved context each time.
+    Regression test for issue #5786.
+    """
+    app.secret_key = "test-secret"
+
+    @app.route("/first")
+    def first():
+        flask.session["request"] = "first"
+        return "first"
+
+    @app.route("/second")
+    def second():
+        flask.session["request"] = "second"
+        return "second"
+
+    with app.test_client() as client:
+        client.get("/first")
+        # After first request, session should reflect first request
+        assert flask.session.get("request") == "first"
+        assert flask.request.path == "/first"
+
+        client.get("/second")
+        # After second request, context should be from the second request
+        assert flask.session.get("request") == "second"
+        assert flask.request.path == "/second"
