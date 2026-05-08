@@ -329,39 +329,42 @@ class Blueprint(Scaffold):
                 endpoint="static",
             )
 
-        # Merge blueprint data into parent.
-        if first_registration:
+        # Merge blueprint data into parent. The per-name data (keyed by the
+        # blueprint name) must be merged every registration since the name
+        # may differ. Only record-once aspects (view_functions, global error
+        # handlers) are skipped on re-registration.
 
-            def extend(bp_dict, parent_dict):
-                for key, values in bp_dict.items():
-                    key = name if key is None else f"{name}.{key}"
-                    parent_dict[key].extend(values)
-
-            for key, value in self.error_handler_spec.items():
+        def extend(bp_dict, parent_dict):
+            for key, values in bp_dict.items():
                 key = name if key is None else f"{name}.{key}"
-                value = defaultdict(
-                    dict,
-                    {
-                        code: {
-                            exc_class: func for exc_class, func in code_values.items()
-                        }
-                        for code, code_values in value.items()
-                    },
-                )
-                app.error_handler_spec[key] = value
+                parent_dict[key].extend(values)
 
+        if first_registration:
             for endpoint, func in self.view_functions.items():
                 app.view_functions[endpoint] = func
 
-            extend(self.before_request_funcs, app.before_request_funcs)
-            extend(self.after_request_funcs, app.after_request_funcs)
-            extend(
-                self.teardown_request_funcs,
-                app.teardown_request_funcs,
+        for key, value in self.error_handler_spec.items():
+            key = name if key is None else f"{name}.{key}"
+            value = defaultdict(
+                dict,
+                {
+                    code: {
+                        exc_class: func for exc_class, func in code_values.items()
+                    }
+                    for code, code_values in value.items()
+                },
             )
-            extend(self.url_default_functions, app.url_default_functions)
-            extend(self.url_value_preprocessors, app.url_value_preprocessors)
-            extend(self.template_context_processors, app.template_context_processors)
+            app.error_handler_spec[key] = value
+
+        extend(self.before_request_funcs, app.before_request_funcs)
+        extend(self.after_request_funcs, app.after_request_funcs)
+        extend(
+            self.teardown_request_funcs,
+            app.teardown_request_funcs,
+        )
+        extend(self.url_default_functions, app.url_default_functions)
+        extend(self.url_value_preprocessors, app.url_value_preprocessors)
+        extend(self.template_context_processors, app.template_context_processors)
 
         for deferred in self.deferred_functions:
             deferred(state)
