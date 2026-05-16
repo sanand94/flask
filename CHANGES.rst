@@ -4,6 +4,8 @@ Version 3.0.2
 Unreleased
 
 -   Correct type for ``jinja_loader`` property. :issue:`5388`
+-   Fix ``super()`` call in list comprehension in ``SeparatedPathType``.
+    :issue:`5392`
 
 
 Version 3.0.1
