@@ -858,7 +858,8 @@ class SeparatedPathType(click.Path):
         self, value: t.Any, param: click.Parameter | None, ctx: click.Context | None
     ) -> t.Any:
         items = self.split_envvar_value(value)
-        return [super().convert(item, param, ctx) for item in items]
+        convert = super().convert
+        return [convert(item, param, ctx) for item in items]
 
 
 @click.command("run", short_help="Run a development server.")
