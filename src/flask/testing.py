@@ -241,7 +241,7 @@ class FlaskClient(Client):
 
         # Re-push contexts that were preserved during the request.
         while self._new_contexts:
-            cm = self._new_contexts.pop()
+            cm = self._new_contexts.pop(0)
             self._context_stack.enter_context(cm)
 
         return response

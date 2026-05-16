@@ -3,6 +3,9 @@ Version 3.1.2
 
 Unreleased
 
+-   Fix preserved contexts being pushed in reversed order by the test
+    client. :issue:`5786`
+
 
 Version 3.1.1
 -------------
