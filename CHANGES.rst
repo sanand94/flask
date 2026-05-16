@@ -3,6 +3,10 @@ Version 3.0.2
 
 Unreleased
 
+-   Widen ``Scaffold.jinja_loader`` type annotation from ``FileSystemLoader``
+    to ``BaseLoader`` so that subclasses can assign a ``ChoiceLoader`` or other
+    loader without mypy errors. :issue:`5388`
+
 
 Version 3.0.1
 -------------
