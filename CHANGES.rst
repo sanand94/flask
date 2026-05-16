@@ -3,6 +3,9 @@ Version 2.3.3
 
 Unreleased
 
+-   Catch ``ValueError`` raised by ``importlib.util.find_spec`` in
+    ``get_root_path`` and ``_find_package_path``. Remove redundant
+    fallback code in ``_find_package_path``. :issue:`5160`
 -   Python 3.12 compatibility.
 -   Update Werkzeug requirement to >=2.3.5.
 
