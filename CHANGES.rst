@@ -3,6 +3,7 @@ Version 3.0.1
 
 Unreleased
 
+-   Fix missing closing quote in ``--key`` error message. :issue:`5342`
 -   Correct type for ``path`` argument to ``send_file``. :issue:`5230`
 
 
