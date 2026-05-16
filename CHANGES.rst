@@ -3,6 +3,9 @@ Version 2.3.1
 
 Unreleased
 
+-   Fix ``from flask import Markup`` not working due to a typo in
+    ``__getattr__``. :issue:`5084`
+
 
 Version 2.3.0
 -------------
