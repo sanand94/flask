@@ -1044,6 +1044,25 @@ def test_trapping_of_bad_request_key_errors(app, client):
     assert 'missing_key' in e.value.description
 
 
+def test_trapping_of_bad_request_key_errors_debug(app, client):
+    app.debug = True
+
+    @app.route('/fail')
+    def fail():
+        flask.request.form['missing_key']
+
+    @app.route('/abort')
+    def abort_400():
+        flask.abort(400)
+
+    with pytest.raises(KeyError):
+        client.get('/fail')
+
+    # abort(400) should not be trapped in debug mode
+    rv = client.get('/abort')
+    assert rv.status_code == 400
+
+
 def test_trapping_of_all_http_exceptions(app, client):
     app.config['TRAP_HTTP_EXCEPTIONS'] = True
 

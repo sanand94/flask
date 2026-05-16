@@ -1663,8 +1663,11 @@ class Flask(_PackageBoundObject):
 
         trap_bad_request = self.config['TRAP_BAD_REQUEST_ERRORS']
 
-        # if unset, trap based on debug mode
-        if (trap_bad_request is None and self.debug) or trap_bad_request:
+        # if unset, trap BadRequestKeyError in debug mode
+        if trap_bad_request is None and self.debug:
+            return isinstance(e, BadRequestKeyError)
+
+        if trap_bad_request:
             return isinstance(e, BadRequest)
 
         return False
