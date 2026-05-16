@@ -835,3 +835,23 @@ def test_nested_blueprint(app, client):
     assert client.get("/parent/no").data == b"Parent no"
     assert client.get("/parent/child/no").data == b"Parent no"
     assert client.get("/parent/child/grandchild/no").data == b"Grandchild no"
+
+
+def test_nested_blueprint_url_prefix_from_init(app, client):
+    """Test that url_prefix set on Blueprint.__init__ is used when nesting."""
+    parent = flask.Blueprint("parent", __name__, url_prefix="/parent")
+    child = flask.Blueprint("child", __name__, url_prefix="/child")
+
+    @parent.route("/")
+    def parent_index():
+        return "Parent"
+
+    @child.route("/")
+    def child_index():
+        return "Child"
+
+    parent.register_blueprint(child)
+    app.register_blueprint(parent)
+
+    assert client.get("/parent/").data == b"Parent"
+    assert client.get("/parent/child/").data == b"Child"
