@@ -420,6 +420,16 @@ def test_help_echo_exception():
     assert "Usage:" in result.stdout
 
 
+def test_get_command_echo_exception():
+    def create_app():
+        raise Exception("oh no")
+
+    cli = FlaskGroup(create_app=create_app)
+    runner = CliRunner(mix_stderr=False)
+    result = runner.invoke(cli, ["missing_command"])
+    assert "Exception: oh no" in result.stderr
+
+
 class TestRoutes:
     @pytest.fixture
     def invoke(self, runner):
