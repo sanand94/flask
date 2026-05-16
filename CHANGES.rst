@@ -3,6 +3,9 @@ Version 3.1.1
 
 Unreleased
 
+-   Fix return type of ``FlaskCliRunner.invoke`` to be
+    ``click.testing.Result`` instead of ``t.Any``. :issue:`5645`
+
 
 Version 3.1.0
 -------------
