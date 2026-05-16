@@ -4,6 +4,8 @@ Version 3.1.1
 Unreleased
 
 -   Fix type hint for `cli_runner.invoke`. :issue:`5645`
+-   Show custom commands in ``flask --help`` output by loading the app
+    when only ``--help`` is passed. :issue:`5673`
 
 
 Version 3.1.0
