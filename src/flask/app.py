@@ -1849,14 +1849,14 @@ class Flask(Scaffold):
         funcs: t.Iterable[URLValuePreprocessorCallable] = self.url_value_preprocessors[
             None
         ]
-        for bp in request.blueprints:
+        for bp in reversed(request.blueprints):
             if bp in self.url_value_preprocessors:
                 funcs = chain(funcs, self.url_value_preprocessors[bp])
         for func in funcs:
             func(request.endpoint, request.view_args)
 
         funcs: t.Iterable[BeforeRequestCallable] = self.before_request_funcs[None]
-        for bp in request.blueprints:
+        for bp in reversed(request.blueprints):
             if bp in self.before_request_funcs:
                 funcs = chain(funcs, self.before_request_funcs[bp])
         for func in funcs:

@@ -5,6 +5,9 @@ Version 2.0.2
 
 Unreleased
 
+-   Fix the order of ``before_request`` and ``url_value_preprocessor``
+    callbacks when nested blueprints are used so that parent callbacks
+    run before child callbacks. :issue:`4229`
 -   Fix type annotation for ``teardown_*`` methods. :issue:`4093`
 -   Fix type annotation for ``before_request`` and ``before_app_request``
     decorators. :issue:`4104`
