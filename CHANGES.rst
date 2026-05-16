@@ -3,6 +3,10 @@ Version 2.3.1
 
 Unreleased
 
+-   Fix importing ``Markup`` from ``flask`` by correcting a duplicate
+    ``name == "escape"`` check that should have been ``name == "Markup"``.
+    :issue:`5084`
+
 
 Version 2.3.0
 -------------
