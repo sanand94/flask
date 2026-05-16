@@ -3,6 +3,10 @@ Version 3.0.1
 
 Unreleased
 
+-   Broaden ``send_file`` type hint for ``path_or_file`` from
+    ``BinaryIO`` to ``IO[bytes]`` to match Werkzeug and accept
+    more file-like objects. :issue:`5320`
+
 
 Version 3.0.0
 -------------
