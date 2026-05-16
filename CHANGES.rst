@@ -5,6 +5,8 @@ Version 2.0.3
 
 Unreleased
 
+-   Fix error message for ``after_this_request`` when called outside a
+    request context. :issue:`4333`
 -   The test client's ``as_tuple`` parameter is deprecated and will be
     removed in Werkzeug 2.1. It is now also deprecated in Flask, to be
     removed in Flask 2.1, while remaining compatible with both in
