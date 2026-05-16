@@ -5,6 +5,10 @@ Version 2.0.2
 
 Unreleased
 
+-   Fix registering a blueprint twice with differing names. The
+    blueprint's ``before_request``, ``after_request``, and
+    ``teardown_request`` handlers are now applied correctly for each
+    registered name. :issue:`4131`
 -   Fix type annotation for ``teardown_*`` methods. :issue:`4093`
 -   Fix type annotation for ``before_request`` and ``before_app_request``
     decorators. :issue:`4104`
