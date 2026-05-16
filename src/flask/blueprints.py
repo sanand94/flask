@@ -318,6 +318,7 @@ class Blueprint(Scaffold):
                     stacklevel=4,
                 )
 
+        first_name_registration = name not in app.blueprints
         app.blueprints[name] = self
         self._got_registered_once = True
         state = self.make_setup_state(app, options, first_registration)
@@ -330,7 +331,7 @@ class Blueprint(Scaffold):
             )
 
         # Merge blueprint data into parent.
-        if first_registration:
+        if first_name_registration:
 
             def extend(bp_dict, parent_dict):
                 for key, values in bp_dict.items():

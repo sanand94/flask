@@ -911,3 +911,42 @@ def test_blueprint_renaming(app, client) -> None:
     assert client.get("/b/").data == b"alt.index"
     assert client.get("/a/a/").data == b"bp.sub.index2"
     assert client.get("/b/a/").data == b"alt.sub.index2"
+
+
+def test_blueprint_renaming_handlers(app, client) -> None:
+    """Registering a blueprint twice with different names should add
+    before/after/teardown handlers for each name."""
+    bp = flask.Blueprint("bp", __name__, url_prefix="/a")
+    order = []
+
+    @bp.get("/")
+    def index():
+        return "ok"
+
+    @bp.before_request
+    def before():
+        order.append("before")
+
+    @bp.after_request
+    def after(response):
+        order.append("after")
+        return response
+
+    @bp.teardown_request
+    def teardown(exc):
+        order.append("teardown")
+
+    app.register_blueprint(bp)
+    app.register_blueprint(bp, url_prefix="/b", name="alt")
+
+    order.clear()
+    assert client.get("/a/").data == b"ok"
+    assert "before" in order
+    assert "after" in order
+    assert "teardown" in order
+
+    order.clear()
+    assert client.get("/b/").data == b"ok"
+    assert "before" in order
+    assert "after" in order
+    assert "teardown" in order
