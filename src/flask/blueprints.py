@@ -19,7 +19,7 @@ from .typing import URLValuePreprocessorCallable
 
 if t.TYPE_CHECKING:
     from .app import Flask
-    from .typing import ErrorHandlerCallable
+    from .typing import ErrorHandlerCallable  # noqa: F401
 
 DeferredSetupFunction = t.Callable[["BlueprintSetupState"], t.Callable]
 
@@ -585,8 +585,8 @@ class Blueprint(Scaffold):
         """
 
         def decorator(
-            f: "ErrorHandlerCallable[Exception]",
-        ) -> "ErrorHandlerCallable[Exception]":
+            f: "ErrorHandlerCallable",
+        ) -> "ErrorHandlerCallable":
             self.record_once(lambda s: s.app.errorhandler(code)(f))
             return f
 
