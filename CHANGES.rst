@@ -3,6 +3,9 @@ Version 3.1.2
 
 Unreleased
 
+-   Fix test client context preservation order when making multiple
+    requests. :issue:`5786`
+
 
 Version 3.1.1
 -------------
