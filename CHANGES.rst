@@ -5,6 +5,8 @@ Unreleased
 
 -   Python 3.12 compatibility.
 -   Update Werkzeug requirement to >=2.3.5.
+-   Handle ``ValueError`` from ``importlib.util.find_spec`` in cases
+    where the module name is invalid. :issue:`5160`
 
 
 Version 2.3.2

@@ -855,31 +855,7 @@ def _find_package_path(import_name):
             return os.path.dirname(root_spec.origin)
 
     # we were unable to find the `package_path` using PEP 451 loaders
-    spec = importlib.util.find_spec(root_mod_name)
-    loader = spec.loader if spec is not None else None
-
-    if loader is None or root_mod_name == "__main__":
-        # import name is not found, or interactive/main module
-        return os.getcwd()
-
-    if hasattr(loader, "get_filename"):
-        filename = loader.get_filename(root_mod_name)
-    elif hasattr(loader, "archive"):
-        # zipimporter's loader.archive points to the .zip file.
-        filename = loader.archive
-    else:
-        # At least one loader is missing both get_filename and archive:
-        # Google App Engine's HardenedModulesHook, use __file__.
-        filename = importlib.import_module(root_mod_name).__file__
-
-    package_path = os.path.abspath(os.path.dirname(filename))
-
-    # If the imported name is a package, filename is currently pointing
-    # to the root of the package, need to get the current directory.
-    if _matching_loader_thinks_module_is_package(loader, root_mod_name):
-        package_path = os.path.dirname(package_path)
-
-    return package_path
+    return os.getcwd()
 
 
 def find_package(import_name: str):
