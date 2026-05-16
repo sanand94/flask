@@ -1267,7 +1267,7 @@ class Flask(Scaffold):
 
     def _find_error_handler(
         self, e: Exception
-    ) -> t.Optional["ErrorHandlerCallable[Exception]"]:
+    ) -> t.Optional["ErrorHandlerCallable"]:
         """Return a registered error handler for an exception in this order:
         blueprint handler for a specific code, app handler for a specific code,
         blueprint handler for an exception class, app handler for an exception

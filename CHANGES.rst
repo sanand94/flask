@@ -5,6 +5,9 @@ Version 2.0.3
 
 Unreleased
 
+-   Fix ``errorhandler`` decorator type check when registering error
+    handlers for ``HTTPException`` subclasses or ``Exception``.
+    :issue:`4295`
 -   The test client's ``as_tuple`` parameter is deprecated and will be
     removed in Werkzeug 2.1. It is now also deprecated in Flask, to be
     removed in Flask 2.1, while remaining compatible with both in

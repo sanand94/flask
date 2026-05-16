@@ -585,8 +585,8 @@ class Blueprint(Scaffold):
         """
 
         def decorator(
-            f: "ErrorHandlerCallable[Exception]",
-        ) -> "ErrorHandlerCallable[Exception]":
+            f: "ErrorHandlerCallable",
+        ) -> "ErrorHandlerCallable":
             self.record_once(lambda s: s.app.errorhandler(code)(f))
             return f
 
