@@ -3,6 +3,10 @@ Version 3.0.1
 
 Unreleased
 
+-   Broaden ``send_file`` type hint for ``path_or_file`` to accept
+    ``IO[bytes]`` instead of the overly restrictive ``BinaryIO``.
+    :issue:`5320`
+
 
 Version 3.0.0
 -------------
