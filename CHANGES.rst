@@ -3,6 +3,9 @@ Version 3.1.1
 
 Unreleased
 
+-   Correct type hint for ``FlaskCliRunner.invoke`` return type from
+    ``t.Any`` to ``Result``. :issue:`5645`
+
 
 Version 3.1.0
 -------------
