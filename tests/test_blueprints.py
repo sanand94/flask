@@ -911,3 +911,36 @@ def test_blueprint_renaming(app, client) -> None:
     assert client.get("/b/").data == b"alt.index"
     assert client.get("/a/a/").data == b"bp.sub.index2"
     assert client.get("/b/a/").data == b"alt.sub.index2"
+
+
+def test_blueprint_renaming_handlers(app, client) -> None:
+    bp = flask.Blueprint("bp", __name__)
+    calls = []
+
+    @bp.before_request
+    def bp_before():
+        calls.append("before")
+
+    @bp.after_request
+    def bp_after(response):
+        calls.append("after")
+        return response
+
+    @bp.teardown_request
+    def bp_teardown(exc):
+        calls.append("teardown")
+
+    @bp.get("/")
+    def index():
+        return "ok"
+
+    app.register_blueprint(bp, url_prefix="/a")
+    app.register_blueprint(bp, url_prefix="/b", name="alt")
+
+    calls.clear()
+    assert client.get("/a/").data == b"ok"
+    assert calls == ["before", "after", "teardown"]
+
+    calls.clear()
+    assert client.get("/b/").data == b"ok"
+    assert calls == ["before", "after", "teardown"]

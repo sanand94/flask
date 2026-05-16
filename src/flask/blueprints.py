@@ -330,12 +330,12 @@ class Blueprint(Scaffold):
             )
 
         # Merge blueprint data into parent.
-        if first_registration:
+        def extend(bp_dict, parent_dict):
+            for key, values in bp_dict.items():
+                key = name if key is None else f"{name}.{key}"
+                parent_dict[key].extend(values)
 
-            def extend(bp_dict, parent_dict):
-                for key, values in bp_dict.items():
-                    key = name if key is None else f"{name}.{key}"
-                    parent_dict[key].extend(values)
+        if first_registration:
 
             for key, value in self.error_handler_spec.items():
                 key = name if key is None else f"{name}.{key}"
@@ -353,15 +353,15 @@ class Blueprint(Scaffold):
             for endpoint, func in self.view_functions.items():
                 app.view_functions[endpoint] = func
 
-            extend(self.before_request_funcs, app.before_request_funcs)
-            extend(self.after_request_funcs, app.after_request_funcs)
-            extend(
-                self.teardown_request_funcs,
-                app.teardown_request_funcs,
-            )
-            extend(self.url_default_functions, app.url_default_functions)
-            extend(self.url_value_preprocessors, app.url_value_preprocessors)
-            extend(self.template_context_processors, app.template_context_processors)
+        extend(self.before_request_funcs, app.before_request_funcs)
+        extend(self.after_request_funcs, app.after_request_funcs)
+        extend(
+            self.teardown_request_funcs,
+            app.teardown_request_funcs,
+        )
+        extend(self.url_default_functions, app.url_default_functions)
+        extend(self.url_value_preprocessors, app.url_value_preprocessors)
+        extend(self.template_context_processors, app.template_context_processors)
 
         for deferred in self.deferred_functions:
             deferred(state)
