@@ -5,6 +5,8 @@ Version 2.0.2
 
 Unreleased
 
+-   Fix error raised during CLI lazy loading being silently swallowed
+    when the command appeared to not exist. :issue:`4096`
 -   Fix type annotation for ``teardown_*`` methods. :issue:`4093`
 -   Fix type annotation for ``before_request`` and ``before_app_request``
     decorators. :issue:`4104`
