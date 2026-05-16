@@ -552,6 +552,10 @@ class FlaskGroup(AppGroup):
             return info.load_app().cli.get_command(ctx, name)
         except NoAppException as e:
             click.secho(f"Error: {e.format_message()}\n", err=True, fg="red")
+        except Exception:
+            # When any other errors occurred during loading, show the
+            # full traceback.
+            click.secho(f"{traceback.format_exc()}\n", err=True, fg="red")
 
     def list_commands(self, ctx):
         self._load_plugin_commands()
