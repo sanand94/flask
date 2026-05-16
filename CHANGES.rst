@@ -3,6 +3,10 @@ Version 3.0.2
 
 Unreleased
 
+-   Widen ``Scaffold.jinja_loader`` type to ``BaseLoader`` to allow
+    assigning other loader types such as ``ChoiceLoader``.
+    :issue:`5388`
+
 
 Version 3.0.1
 -------------
