@@ -5,6 +5,9 @@ Unreleased
 
 -   When using ``follow_redirects`` in the test client, the final state
     of ``session`` is correct. :issue:`5786`
+-   Use ``IO[bytes]`` instead of ``BinaryIO`` for the ``path_or_file``
+    parameter of ``send_file`` for wider type compatibility.
+    :issue:`5776`
 
 
 Version 3.1.1
