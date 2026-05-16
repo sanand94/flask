@@ -921,3 +921,38 @@ def test_blueprint_renaming(app, client) -> None:
     assert client.get("/b/a/").data == b"alt.sub.index2"
     assert client.get("/a/error").data == b"Error"
     assert client.get("/b/error").data == b"Error"
+
+
+def test_nested_blueprint_callback_order(app, client):
+    order = []
+
+    parent = flask.Blueprint("parent", __name__)
+    child = flask.Blueprint("child", __name__)
+
+    @parent.before_request
+    def parent_before():
+        order.append("parent_before")
+
+    @child.before_request
+    def child_before():
+        order.append("child_before")
+
+    @parent.after_request
+    def parent_after(response):
+        order.append("parent_after")
+        return response
+
+    @child.after_request
+    def child_after(response):
+        order.append("child_after")
+        return response
+
+    @child.route("/")
+    def index():
+        return "ok"
+
+    parent.register_blueprint(child, url_prefix="/child")
+    app.register_blueprint(parent, url_prefix="/parent")
+
+    client.get("/parent/child/")
+    assert order == ["parent_before", "child_before", "child_after", "parent_after"]
